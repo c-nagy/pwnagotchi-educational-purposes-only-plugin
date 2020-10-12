@@ -22,3 +22,15 @@ class EducationalPurposesOnly(plugins.Plugin):
     def on_unload(self, ui):
 
     def on_ui_update(self, ui):
+        
+    def on_wifi_update(self, agent, access_points):
+        # if access_points contains self.options['home-network']:
+            # signal_strength = X
+            # channel = X
+            # stop_monitor_interface OS command
+            # set wlan0 channel OS command
+            # create wpa_supplicant.conf file
+            # start wpa_supplicant service OS command
+            # sudo wpa_cli -i wlan0 reconfigure
+      
+         
