@@ -15,8 +15,10 @@ class EducationalPurposesOnly(plugins.Plugin):
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
     def _stop_monitor_mode():
+        # Run: `ifconfig mon0 down && iw dev mon0 del`
         
     def _restart_monitor_mode():
+        # Run: `iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up`
     
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
