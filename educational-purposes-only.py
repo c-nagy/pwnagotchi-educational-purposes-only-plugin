@@ -14,12 +14,18 @@ class EducationalPurposesOnly(plugins.Plugin):
     __license__ = 'GPL3'
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
-    def _stop_monitor_mode():
-        # Run: `ifconfig mon0 down && iw dev mon0 del`
+    def _connect_to_target_network(self, target_network, channel):
+        # Disable monitor mode: `ifconfig mon0 down && iw dev mon0 del`
+        # Check to ensure monitor mode is indeed disabled
+        # Set wlan0 channel
+        # Update wpa_supplicant.conf file
+        # Start wpa_supplicant service
+        # Connect to wifi: `wpa_cli -i wlan0 reconfigure`
         
     def _restart_monitor_mode():
-        # Run: `iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up`
-    
+        # Stop wpa_supplicant service and ensure its process is killed
+        # Start monitor mode: `iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up`
+
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
 
@@ -36,12 +42,12 @@ class EducationalPurposesOnly(plugins.Plugin):
             logging.info("FOUND %s inside of %s" % (home_network, detected_networks))
             # signal_strength = X
             # channel = X
-            # _stop_monitor_mode
-            # set wlan0 channel command
-            # create wpa_supplicant.conf file
-            # start wpa_supplicant service
-            # `wpa_cli -i wlan0 reconfigure` to connect
-            # _restart_monitor_mode
+            if signal_strength > self.options['minimum-signal-strength']:
+                _stop_monitor_mode()
+                _connect_to_target_network(home_network, channel)
+                #_restart_monitor_mode when some conditions are met
+            else:
+                logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
         else:
             logging.info("%s NOT FOUND inside of %s" % (home_network, detected_networks))
         pass
