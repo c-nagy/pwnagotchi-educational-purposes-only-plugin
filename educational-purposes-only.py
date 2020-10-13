@@ -15,7 +15,7 @@ class EducationalPurposesOnly(plugins.Plugin):
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
     def _connect_to_target_network(self, target_network, channel):
-        # Send command to Bettercap to stop using mon0
+        # Send command to Bettercap to stop using mon0 - POST request to localhost:8081/api/session with POST body: {"cmd":"wifi.recon off"}
         # Disable monitor mode: `ifconfig mon0 down && iw dev mon0 del`
         # Check to ensure monitor mode is indeed disabled
         # Set wlan0 channel
@@ -26,7 +26,7 @@ class EducationalPurposesOnly(plugins.Plugin):
     def _restart_monitor_mode():
         # Stop wpa_supplicant service and ensure its process is killed
         # Start monitor mode: `iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up`
-        # Send command to Bettercap to use mon0
+        # Send command to Bettercap to resume use of mon0 - POST request to localhost:8081/api/session with POST body: {"cmd":"wifi.recon on"}
         
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
