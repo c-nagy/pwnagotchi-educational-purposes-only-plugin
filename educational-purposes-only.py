@@ -24,13 +24,17 @@ class EducationalPurposesOnly(plugins.Plugin):
     def on_ui_update(self, ui):
         
     def on_wifi_update(self, agent, access_points):
-        # if access_points contains self.options['home-network']:
-            # signal_strength = X
-            # channel = X
-            # stop_monitor_interface OS command
-            # set wlan0 channel OS command
-            # create wpa_supplicant.conf file
-            # start wpa_supplicant service OS command
-            # sudo wpa_cli -i wlan0 reconfigure
-      
-         
+        detected_networks = str(access_points)
+        home_network = self.options['home-network']
+        if home_network in network_list:
+            logging.info("FOUND %s inside of %s" % (home_network, network_list))
+        else:
+            logging.info("%s NOT FOUND inside of %s" % (home_network, network_list))
+        pass                
+        # signal_strength = X
+        # channel = X
+        # stop_monitor_interface OS command
+        # set wlan0 channel OS command
+        # create wpa_supplicant.conf file
+        # start wpa_supplicant service OS command
+        # sudo wpa_cli -i wlan0 reconfigure
