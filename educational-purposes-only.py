@@ -14,6 +14,10 @@ class EducationalPurposesOnly(plugins.Plugin):
     __license__ = 'GPL3'
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
+    def _stop_monitor_mode():
+        
+    def _restart_monitor_mode():
+    
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
 
@@ -26,15 +30,16 @@ class EducationalPurposesOnly(plugins.Plugin):
     def on_wifi_update(self, agent, access_points):
         detected_networks = str(access_points)
         home_network = self.options['home-network']
-        if home_network in network_list:
-            logging.info("FOUND %s inside of %s" % (home_network, network_list))
+        if home_network in detected_networks:
+            logging.info("FOUND %s inside of %s" % (home_network, detected_networks))
+            # signal_strength = X
+            # channel = X
+            # _stop_monitor_mode
+            # set wlan0 channel command
+            # create wpa_supplicant.conf file
+            # start wpa_supplicant service
+            # `wpa_cli -i wlan0 reconfigure` to connect
+            # _restart_monitor_mode
         else:
-            logging.info("%s NOT FOUND inside of %s" % (home_network, network_list))
-        pass                
-        # signal_strength = X
-        # channel = X
-        # stop_monitor_interface OS command
-        # set wlan0 channel OS command
-        # create wpa_supplicant.conf file
-        # start wpa_supplicant service OS command
-        # sudo wpa_cli -i wlan0 reconfigure
+            logging.info("%s NOT FOUND inside of %s" % (home_network, detected_networks))
+        pass
