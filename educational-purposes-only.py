@@ -22,20 +22,28 @@ class EducationalPurposesOnly(plugins.Plugin):
         # Update wpa_supplicant.conf file
         # Start wpa_supplicant service
         # Connect to wifi: `wpa_cli -i wlan0 reconfigure`
+        pass
         
     def _restart_monitor_mode():
         # Stop wpa_supplicant service and ensure its process is killed
         # Start monitor mode: `iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up`
         # Send command to Bettercap to resume use of mon0 - POST request to localhost:8081/api/session with POST body: {"cmd":"wifi.recon on"}
+        pass
         
+    def _internal_network_scans():
+        pass
+    
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
 
     def on_ui_setup(self, ui):
+        pass
 
     def on_unload(self, ui):
+        pass
 
     def on_ui_update(self, ui):
+        pass
         
     def on_wifi_update(self, agent, access_points):
         detected_networks = str(access_points)
@@ -52,4 +60,3 @@ class EducationalPurposesOnly(plugins.Plugin):
                 logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
         else:
             logging.info("%s NOT FOUND inside of %s" % (home_network, detected_networks))
-        pass
