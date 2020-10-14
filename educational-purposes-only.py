@@ -18,17 +18,22 @@ class EducationalPurposesOnly(plugins.Plugin):
     def _connect_to_target_network(self, target_network, channel):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
-        # Disable monitor mode: `ifconfig mon0 down && iw dev mon0 del`
-        # Check to ensure monitor mode is indeed disabled
+        # Disable monitor mode interface mon0:
+        os.popen('ifconfig mon0 down && iw dev mon0 del')
         # Set wlan0 channel
         # Update wpa_supplicant.conf file
-        # Start wpa_supplicant service
-        # Connect to wifi: `wpa_cli -i wlan0 reconfigure`
+        # Start wpa_supplicant service:
+        os.popen('systemctl start wpa_supplicant')
+        # Connect to wifi:
+        os.popen('wpa_cli -i wlan0 reconfigure')
         pass
         
     def _restart_monitor_mode():
-        # Stop wpa_supplicant service and ensure its process is killed
-        # Start monitor mode: `iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up`
+        # Stop wpa_supplicant service:
+        os.popen('systemctl stop wpa_supplicant')
+        # Ensure wpa_supplicant process is killed:
+        # Start monitor mode:
+        os.popen('iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up')
         # Send command to Bettercap to resume use of mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
