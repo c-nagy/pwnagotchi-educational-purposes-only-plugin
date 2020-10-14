@@ -19,7 +19,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0:
-        os.popen('ifconfig mon0 down && iw dev mon0 del')
+        os.popen('ifconfig mon0 down && sleep 1 && iw dev mon0 del')
         # Set wlan0 channel
         # Update wpa_supplicant.conf file
         # Start wpa_supplicant service:
