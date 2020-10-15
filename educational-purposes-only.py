@@ -20,7 +20,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0 (this method seems to be the most reliable?):
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
-        # Set wlan0 channel
+        # Set wlan0 channel to match AP:
+        os.popen("iwconfig wlan0 channel %d" % channel)
         # Update wpa_supplicant.conf file
         # Start wpa_supplicant service:
         os.popen('systemctl start wpa_supplicant')
@@ -31,9 +32,11 @@ class EducationalPurposesOnly(plugins.Plugin):
         # Stop wpa_supplicant service:
         os.popen('systemctl stop wpa_supplicant')
         # Ensure wpa_supplicant process is killed:
+        # Restart potentially buggy driver:
+        os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Start monitor mode:
         os.popen('iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up')
-        # Send command to Bettercap to resume use of mon0:
+        # Send command to Bettercap to resume wifi recon:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
     def _internal_network_scans():
