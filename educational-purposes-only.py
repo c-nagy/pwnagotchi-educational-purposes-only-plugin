@@ -17,7 +17,7 @@ class EducationalPurposesOnly(plugins.Plugin):
     __license__ = 'GPL3'
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
-    def _connect_to_target_network(target_network, channel):
+    def _connect_to_target_network(network_name, channel):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0 (this seems to be the most reliable method?):
@@ -46,8 +46,9 @@ class EducationalPurposesOnly(plugins.Plugin):
         # Send command to Bettercap to resume wifi recon (using mon0):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
-    def _internal_network_scans():
-        pass
+    def _internal_network_scans(network_name):
+        nmap_cmd = "nmap --top-ports=100 $(ip r | awk '{print $1}' | tail -n 1) -oA /root/%s" % network_name)
+        aquatone_cmd = "X"
     
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
@@ -59,9 +60,11 @@ class EducationalPurposesOnly(plugins.Plugin):
         pass
 
     def on_ui_update(self, ui):
+        # If not connected to a wireless network and mon0 doesn't exist, run _restart_monitor_mode()
         pass
         
     def on_wifi_update(self, agent, access_points):
+        # Ensure this only runs if NOT already connected to a wireless network:
         nearby_networks = json.loads(access_points)
         home_network = self.options['home-network']
         for network in nearby_networks['aps']:
