@@ -68,8 +68,9 @@ class EducationalPurposesOnly(plugins.Plugin):
         for network in nearby_networks_list:
             if home_network in str(network):
                 logging.info("FOUND %s inside of %s" % (home_network, network))
-                # signal_strength and channel parsing here
-                if signal_strength > self.options['minimum-signal-strength']:
+                signal_strength = network['rssi']
+                channel = network['channel']
+                if signal_strength >= self.options['minimum-signal-strength']:
                     _connect_to_target_network(network, channel)
                 else:
                     logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
