@@ -47,8 +47,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
     def _internal_network_scans(network_name):
-        nmap_cmd = "nmap --top-ports=100 $(ip r | grep wlan0 | awk '{print $1}') -oA /root/%s" % network_name)
-        aquatone_cmd = "X"
+        nmap_cmd = 'nmap --top-ports=100 $(ip r | grep wlan0 | awk "{print $1}") -oA /root/%s' % network_name)
+        aquatone_cmd = 'X'
     
     def on_loaded(self):
         logging.info("educational-purposes-only loaded")
@@ -60,21 +60,21 @@ class EducationalPurposesOnly(plugins.Plugin):
         pass
 
     def on_ui_update(self, ui):
-        # If not connected to a wireless network and mon0 doesn't exist, run _restart_monitor_mode()
-        pass
+        # If not connected to a wireless network and mon0 doesn't exist, run _restart_monitor_mode function
+        # Might need to think of a way to prevent this from happening in the middle of the _connect_to_target_network function
+        if "Not-Associated" in os.popen('iwconfig wlan0').read() and "Monitor" not in os.popen('iwconfig mon0').read():
+            _restart_monitor_mode()
         
     def on_wifi_update(self, agent, access_points):
-        # Ensure this only runs if NOT already connected to a wireless network:
-        nearby_networks = json.loads(access_points)
-        home_network = self.options['home-network']
-        for network in nearby_networks['aps']:
-            if network['hostname'] == home_network:
-                logging.info("FOUND %s nearby. Network details: %s" % (home_network, network))
-                signal_strength = network['rssi']
-                channel = network['channel']
-                if signal_strength >= self.options['minimum-signal-strength']:
-                    _connect_to_target_network(network, channel)
-                else:
-                    logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
-        else:
-            logging.info("%s NOT FOUND inside of %s" % (home_network, detected_networks))
+        if "Not-Associated" in os.popen('iwconfig wlan0').read():
+            nearby_networks = json.loads(access_points)
+            home_network = self.options['home-network']
+            for network in nearby_networks['aps']:
+                if network['hostname'] == home_network:
+                    logging.info("FOUND home network \"%s\" nearby. Details: %s" % (home_network, network))
+                    signal_strength = network['rssi']
+                    channel = network['channel']
+                    if signal_strength >= self.options['minimum-signal-strength']:
+                        _connect_to_target_network(network, channel)
+                    else:
+                        logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
