@@ -19,14 +19,13 @@ class EducationalPurposesOnly(plugins.Plugin):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0 (this method seems to be the most reliable?):
-        os.popen('modprobe -r brcmfmac && sudo modprobe brcmfmac')
+        os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Set wlan0 channel
         # Update wpa_supplicant.conf file
         # Start wpa_supplicant service:
         os.popen('systemctl start wpa_supplicant')
         # Connect to wifi:
         os.popen('wpa_cli -i wlan0 reconfigure')
-        pass
         
     def _restart_monitor_mode():
         # Stop wpa_supplicant service:
