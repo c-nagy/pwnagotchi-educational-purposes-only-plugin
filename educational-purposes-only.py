@@ -31,12 +31,13 @@ class EducationalPurposesOnly(plugins.Plugin):
     def _restart_monitor_mode():
         # Stop wpa_supplicant service:
         os.popen('systemctl stop wpa_supplicant')
-        # Ensure wpa_supplicant process is killed:
+        # Ensure wpa_supplicant processes are killed:
+        os.popen('killall wpa_supplicant')
         # Restart potentially buggy driver:
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Start monitor mode:
         os.popen('iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up')
-        # Send command to Bettercap to resume wifi recon:
+        # Send command to Bettercap to resume wifi recon (using mon0):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
     def _internal_network_scans():
