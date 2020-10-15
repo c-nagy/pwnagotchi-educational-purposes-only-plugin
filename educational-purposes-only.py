@@ -20,7 +20,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0 (this method seems to be the most reliable?):
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
-        # Set wlan0 channel to match AP:
+        # Set wlan0 channel to match AP. Can be verified by running `iwlist channel`:
         os.popen("iwconfig wlan0 channel %d" % channel)
         # Update wpa_supplicant.conf file
         # Start wpa_supplicant service:
