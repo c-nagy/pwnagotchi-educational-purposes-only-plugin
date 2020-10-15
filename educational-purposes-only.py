@@ -8,6 +8,7 @@ import pwnagotchi
 import logging
 import os
 import requests
+import json
 
 
 class EducationalPurposesOnly(plugins.Plugin):
@@ -61,16 +62,14 @@ class EducationalPurposesOnly(plugins.Plugin):
         pass
         
     def on_wifi_update(self, agent, access_points):
-        detected_networks = str(access_points)
+        detected_networks = json.loads(access_points)
         home_network = self.options['home-network']
-        if home_network in detected_networks:
+        if home_network in str(detected_networks):
             logging.info("FOUND %s inside of %s" % (home_network, detected_networks))
             # signal_strength = X
             # channel = X
             if signal_strength > self.options['minimum-signal-strength']:
-                _stop_monitor_mode()
                 _connect_to_target_network(home_network, channel)
-                #_restart_monitor_mode when some conditions are met
             else:
                 logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
         else:
