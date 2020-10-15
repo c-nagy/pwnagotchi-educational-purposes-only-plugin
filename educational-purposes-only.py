@@ -62,15 +62,16 @@ class EducationalPurposesOnly(plugins.Plugin):
         pass
         
     def on_wifi_update(self, agent, access_points):
-        detected_networks = json.loads(access_points)
+        json_access_points = json.loads(access_points)
+        nearby_networks_list = json_access_points['aps']
         home_network = self.options['home-network']
-        if home_network in str(detected_networks):
-            logging.info("FOUND %s inside of %s" % (home_network, detected_networks))
-            # signal_strength = X
-            # channel = X
-            if signal_strength > self.options['minimum-signal-strength']:
-                _connect_to_target_network(home_network, channel)
-            else:
-                logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
+        for network in nearby_networks_list:
+            if home_network in str(network):
+                logging.info("FOUND %s inside of %s" % (home_network, network))
+                # signal_strength and channel parsing here
+                if signal_strength > self.options['minimum-signal-strength']:
+                    _connect_to_target_network(network, channel)
+                else:
+                    logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
         else:
             logging.info("%s NOT FOUND inside of %s" % (home_network, detected_networks))
