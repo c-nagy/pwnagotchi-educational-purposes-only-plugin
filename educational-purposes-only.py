@@ -68,7 +68,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         nearby_networks = json.loads(access_points)
         home_network = self.options['home-network']
         for network in nearby_networks['aps']:
-            if home_network in str(network):
+            if network['hostname'] == home_network:
                 logging.info("FOUND %s nearby. Network details: %s" % (home_network, network))
                 signal_strength = network['rssi']
                 channel = network['channel']
