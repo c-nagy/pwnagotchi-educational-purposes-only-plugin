@@ -66,9 +66,9 @@ class EducationalPurposesOnly(plugins.Plugin):
             _restart_monitor_mode()
         
     def on_wifi_update(self, agent, access_points):
+        home_network = self.options['home-network']
         if "Not-Associated" in os.popen('iwconfig wlan0').read():
-            nearby_networks = json.loads(access_points)
-            home_network = self.options['home-network']
+            nearby_networks = json.loads(access_points) 
             for network in nearby_networks['aps']:
                 if network['hostname'] == home_network:
                     logging.info("FOUND home network \"%s\" nearby. Details: %s" % (home_network, network))
@@ -77,4 +77,4 @@ class EducationalPurposesOnly(plugins.Plugin):
                     if signal_strength >= self.options['minimum-signal-strength']:
                         _connect_to_target_network(network, channel)
                     else:
-                        logging.info("The signal strength of %s is too low (%s)" % (home_network, signal_strength))
+                        logging.info("The signal strength of %s is too low (%d)" % (home_network, signal_strength))
