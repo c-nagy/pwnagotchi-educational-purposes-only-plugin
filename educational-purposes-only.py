@@ -62,12 +62,11 @@ class EducationalPurposesOnly(plugins.Plugin):
         pass
         
     def on_wifi_update(self, agent, access_points):
-        json_access_points = json.loads(access_points)
-        nearby_networks_list = json_access_points['aps']
+        nearby_networks = json.loads(access_points)
         home_network = self.options['home-network']
-        for network in nearby_networks_list:
+        for network in nearby_networks['aps']:
             if home_network in str(network):
-                logging.info("FOUND %s inside of %s" % (home_network, network))
+                logging.info("FOUND %s nearby. Network details: %s" % (home_network, network))
                 signal_strength = network['rssi']
                 channel = network['channel']
                 if signal_strength >= self.options['minimum-signal-strength']:
