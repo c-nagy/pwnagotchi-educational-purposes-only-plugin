@@ -8,7 +8,7 @@ import pwnagotchi
 import logging
 import os
 import requests
-import json
+import time
 
 
 class EducationalPurposesOnly(plugins.Plugin):
@@ -17,28 +17,35 @@ class EducationalPurposesOnly(plugins.Plugin):
     __license__ = 'GPL3'
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
-    def _connect_to_target_network(network_name, channel):
+    def _connect_to_target_network(self, network_name, channel):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0 (This seems to be the most reliable method?):
-        os.popen('modprobe --remove brcmfmac; modprobe brcmfmac; ifconfig wlan0 up')
+        os.popen('modprobe --remove brcmfmac; modprobe brcmfmac')
+        time.sleep(3)
         # Randomize wlan0 MAC address prior to connecting (The -A flag means use a random but real vendor string):
         os.popen('macchanger -A wlan0')
+        time.sleep(3)
+        # Start up wlan0 again
+        os.popen('ifconfig wlan0 up')
+        time.sleep(3)
         # Set wlan0 channel to match AP. Can be verified by running `iwlist channel`:
         os.popen("iwconfig wlan0 channel %d" % channel)
         # Ensure buggy systemd service version of wpa_supplicant is disabled:
         os.popen('systemctl stop wpa_supplicant; killall wpa_supplicant')
+        time.sleep(3)
         # Overwrite wpa_supplicant.conf file with creds:
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as wpa_supplicant_conf:
             wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=\"%s\"\n\tpsk=\"%s\"\n}\n" % (network_name, self.options['home-password']))
         # Start wpa_supplicant background process:
         os.popen('wpa_supplicant -u -s -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &')
+        time.sleep(3)
         # Connect to wifi:
         os.popen('wpa_cli -i wlan0 reconfigure')
         # Try to get an IP address on the network via DHCP:
         os.popen('dhclient wlan0')
         
-    def _restart_monitor_mode():
+    def _restart_monitor_mode(self):
         # Stop wpa_supplicant processes:
         os.popen('systemctl stop wpa_supplicant; killall wpa_supplicant')
         # Restart potentially buggy driver:
@@ -68,13 +75,12 @@ class EducationalPurposesOnly(plugins.Plugin):
     def on_ui_update(self, ui):
         # If not connected to a wireless network and mon0 doesn't exist, run _restart_monitor_mode function
         if "Not-Associated" in os.popen('iwconfig wlan0').read() and "Monitor" not in os.popen('iwconfig mon0').read():
-            _restart_monitor_mode()
+            self._restart_monitor_mode()
         
     def on_wifi_update(self, agent, access_points):
         home_network = self.options['home-network']
         if "Not-Associated" in os.popen('iwconfig wlan0').read():
-            nearby_networks = json.loads(access_points) 
-            for network in nearby_networks['aps']:
+            for network in access_points:
                 if network['hostname'] == home_network:
                     logging.info("FOUND home network \"%s\" nearby. Details: %s" % (home_network, network))
                     signal_strength = network['rssi']
