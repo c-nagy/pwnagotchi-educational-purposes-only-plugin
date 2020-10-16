@@ -28,7 +28,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen("iwconfig wlan0 channel %d" % channel)
         # Overwrite wpa_supplicant.conf file with creds:
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as wpa_supplicant_conf:
-            wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=%s\n\tpsk=\"%s\"\n}\n" % (network_name, "password")
+            wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=%s\n\tpsk=\"%s\"\n}\n" % (network_name, "password"))
         # Start wpa_supplicant service:
         os.popen('systemctl start wpa_supplicant')
         # Connect to wifi:
