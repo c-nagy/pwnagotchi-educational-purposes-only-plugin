@@ -39,10 +39,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen('dhclient wlan0')
         
     def _restart_monitor_mode():
-        # Stop wpa_supplicant service:
-        os.popen('systemctl stop wpa_supplicant')
-        # Ensure wpa_supplicant processes are killed:
-        os.popen('killall wpa_supplicant')
+        # Stop wpa_supplicant processes:
+        os.popen('systemctl stop wpa_supplicant; killall wpa_supplicant')
         # Restart potentially buggy driver:
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Randomize MAC address of wlan0 again:
