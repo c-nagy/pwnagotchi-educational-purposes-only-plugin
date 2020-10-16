@@ -1,5 +1,5 @@
 # educational-purposes-only performs automatic wifi authentication and internal network recon
-# Install dependencies: apt update; apt install nmap macchanger udhcpd
+# Install dependencies: apt update; apt install nmap macchanger
 from pwnagotchi.ui.components import LabeledValue
 from pwnagotchi.ui.view import BLACK
 import pwnagotchi.ui.fonts as fonts
@@ -20,9 +20,9 @@ class EducationalPurposesOnly(plugins.Plugin):
     def _connect_to_target_network(network_name, channel):
         # Send command to Bettercap to stop using mon0:
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
-        # Disable monitor mode interface mon0 (this seems to be the most reliable method?):
+        # Disable monitor mode interface mon0 (This seems to be the most reliable method?):
         os.popen('modprobe --remove brcmfmac; modprobe brcmfmac; ifconfig wlan0 up')
-        # Randomize wlan0 MAC address prior to connecting (the -A flag: use a random but real vendor string):
+        # Randomize wlan0 MAC address prior to connecting (The -A flag means use a random but real vendor string):
         os.popen('macchanger -A wlan0')
         # Set wlan0 channel to match AP. Can be verified by running `iwlist channel`:
         os.popen("iwconfig wlan0 channel %d" % channel)
@@ -30,7 +30,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen('systemctl stop wpa_supplicant; killall wpa_supplicant')
         # Overwrite wpa_supplicant.conf file with creds:
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as wpa_supplicant_conf:
-            wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=%s\n\tpsk=\"%s\"\n}\n" % (network_name, "password"))
+            wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=\"%s\"\n\tpsk=\"%s\"\n}\n" % (network_name, self.options['home-password']))
         # Start wpa_supplicant background process:
         os.popen('wpa_supplicant -u -s -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &')
         # Connect to wifi:
@@ -67,7 +67,6 @@ class EducationalPurposesOnly(plugins.Plugin):
 
     def on_ui_update(self, ui):
         # If not connected to a wireless network and mon0 doesn't exist, run _restart_monitor_mode function
-        # Might need to think of a way to prevent this from happening in the middle of the _connect_to_target_network function
         if "Not-Associated" in os.popen('iwconfig wlan0').read() and "Monitor" not in os.popen('iwconfig mon0').read():
             _restart_monitor_mode()
         
