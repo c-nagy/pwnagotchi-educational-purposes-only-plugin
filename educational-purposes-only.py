@@ -22,17 +22,19 @@ class EducationalPurposesOnly(plugins.Plugin):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         # Disable monitor mode interface mon0 (this seems to be the most reliable method?):
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
-        # Randomize wlan0 MAC address (-A means a random but real vendor string is used) prior to connecting:
-        os.popen('macchanger -A --bia wlan0')
+        # Randomize wlan0 MAC address prior to connecting (the -A flag: use a random but real vendor string):
+        os.popen('macchanger -A wlan0')
         # Ensure wlan0 interface is up:
         os.popen('ifconfig wlan0 up')
         # Set wlan0 channel to match AP. Can be verified by running `iwlist channel`:
         os.popen("iwconfig wlan0 channel %d" % channel)
+        # Ensure buggy systemd service version of wpa_supplicant is disabled:
+        os.popen('systemctl stop wpa_supplicant; killall wpa_supplicant')
         # Overwrite wpa_supplicant.conf file with creds:
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as wpa_supplicant_conf:
             wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=%s\n\tpsk=\"%s\"\n}\n" % (network_name, "password"))
-        # Start wpa_supplicant service:
-        os.popen('systemctl start wpa_supplicant')
+        # Start wpa_supplicant background process:
+        os.popen('wpa_supplicant -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &')
         # Connect to wifi:
         os.popen('wpa_cli -i wlan0 reconfigure')
         
