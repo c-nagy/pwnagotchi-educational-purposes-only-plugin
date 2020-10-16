@@ -60,7 +60,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
     def _internal_network_scans(network_name):
-        nmap_cmd = 'nmap --top-ports=100 $(ip r | grep wlan0 | awk "{print $1}") -oA /root/%s' % network_name)
+        #nmap_cmd = 'nmap --top-ports=100 $(ip r | grep wlan0 | awk "{print $1}") -oA /root/%s' % network_name)
         aquatone_cmd = 'X'
     
     def on_loaded(self):
@@ -86,6 +86,6 @@ class EducationalPurposesOnly(plugins.Plugin):
                     signal_strength = network['rssi']
                     channel = network['channel']
                     if signal_strength >= self.options['minimum-signal-strength']:
-                        _connect_to_target_network(network, channel)
+                        self._connect_to_target_network(network, channel)
                     else:
                         logging.info("The signal strength of %s is too low (%d)" % (home_network, signal_strength))
