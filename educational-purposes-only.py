@@ -46,7 +46,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         # Restart potentially buggy driver:
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Randomize MAC address of wlan0 again:
-        os.popen('macchanger -A --bia wlan0')
+        os.popen('macchanger -A wlan0')
         # Ensure wlan0 interface is up:
         os.popen('ifconfig wlan0 up')
         # Start monitor mode:
