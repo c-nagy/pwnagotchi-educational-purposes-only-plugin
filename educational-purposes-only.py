@@ -24,6 +24,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Randomize wlan0 MAC address (-A means a random but real vendor string is used) prior to connecting:
         os.popen('macchanger -A --bia wlan0')
+        # Ensure wlan0 interface is up:
+        os.popen('ifconfig wlan0 up')
         # Set wlan0 channel to match AP. Can be verified by running `iwlist channel`:
         os.popen("iwconfig wlan0 channel %d" % channel)
         # Overwrite wpa_supplicant.conf file with creds:
@@ -43,6 +45,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen('modprobe --remove brcmfmac && modprobe brcmfmac')
         # Randomize MAC address of wlan0 again:
         os.popen('macchanger -A --bia wlan0')
+        # Ensure wlan0 interface is up:
+        os.popen('ifconfig wlan0 up')
         # Start monitor mode:
         os.popen('iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up')
         # Send command to Bettercap to resume wifi recon (using mon0):
