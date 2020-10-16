@@ -1,5 +1,5 @@
 # educational-purposes-only performs automatic wifi authentication and internal network recon
-# Install dependencies: apt update; apt install nmap macchanger
+# Install dependencies: apt update; apt install nmap macchanger udhcpd
 from pwnagotchi.ui.components import LabeledValue
 from pwnagotchi.ui.view import BLACK
 import pwnagotchi.ui.fonts as fonts
@@ -35,6 +35,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         os.popen('wpa_supplicant -u -s -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &')
         # Connect to wifi:
         os.popen('wpa_cli -i wlan0 reconfigure')
+        # Try to get an IP address on the network via DHCP:
+        os.popen('dhclient wlan0')
         
     def _restart_monitor_mode():
         # Stop wpa_supplicant service:
