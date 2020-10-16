@@ -34,7 +34,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as wpa_supplicant_conf:
             wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=%s\n\tpsk=\"%s\"\n}\n" % (network_name, "password"))
         # Start wpa_supplicant background process:
-        os.popen('wpa_supplicant -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &')
+        os.popen('wpa_supplicant -u -s -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &')
         # Connect to wifi:
         os.popen('wpa_cli -i wlan0 reconfigure')
         
