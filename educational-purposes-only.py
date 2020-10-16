@@ -86,6 +86,6 @@ class EducationalPurposesOnly(plugins.Plugin):
                     signal_strength = network['rssi']
                     channel = network['channel']
                     if signal_strength >= self.options['minimum-signal-strength']:
-                        self._connect_to_target_network(network, channel)
+                        self._connect_to_target_network(network['hostname'], channel)
                     else:
                         logging.info("The signal strength of %s is too low (%d)" % (home_network, signal_strength))
