@@ -93,21 +93,17 @@ class EducationalPurposesOnly(plugins.Plugin):
         
     def on_wifi_update(self, agent, access_points):
         global READY
-        logging.info(access_points)
-        logging.info("wifi update NOWWWW")
-        logging.info("Ready state: %d" % READY)
+        logging.info("Wifi state updating normally...")
         home_network = self.options['home-network']
         if READY == 1 and "Not-Associated" in os.popen('iwconfig wlan0').read():
-            logging.info("scanning for home network...")
             for network in access_points:
                 if network['hostname'] == home_network:
-                    logging.info("FOUND home network \"%s\" nearby. Details: %s" % (home_network, network))
                     signal_strength = network['rssi']
                     channel = network['channel']
-                    logging.info("signal strength is %d and channel is %d" % (signal_strength, channel))
+                    logging.info("FOUND home network nearby on channel %d (rssi: %d)" % (channel, signal_strength))
                     if signal_strength >= self.options['minimum-signal-strength']:
-                        logging.info("starting association...")
+                        logging.info("Starting association...")
                         READY = 0
                         self._connect_to_target_network(network['hostname'], channel)
                     else:
-                        logging.info("The signal strength of %s is too low (%d)" % (home_network, signal_strength))
+                        logging.info("The signal strength is too low (%d) to connect." % (signal_strength))
