@@ -106,4 +106,4 @@ class EducationalPurposesOnly(plugins.Plugin):
                     if network['rssi'] >= self.options['minimum-signal-strength']:
                         self._connect_to_target_network(network['hostname'], network['channel'])
                     else:
-                        logging.info("Unfortunately, the signal strength of %s is currently %d, which is weaker than the minimum set in config.toml." % (network['hostname'], network['rssi']))
+                        logging.info("Unfortunately, the signal strength of %s is currently %d, which is weaker than the minimum set in config.toml (%d)." % (network['hostname'], network['rssi'], self.options['minimum-signal-strength']))
