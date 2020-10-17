@@ -19,7 +19,7 @@ class EducationalPurposesOnly(plugins.Plugin):
     __license__ = 'GPL3'
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
     
-     def _connect_to_target_network(self, network_name, channel):
+    def _connect_to_target_network(self, network_name, channel):
         global READY
         READY = False
         logging.info("Starting connection to target network on channel %d!" % channel) 
