@@ -34,14 +34,11 @@ class EducationalPurposesOnly(plugins.Plugin):
         time.sleep(5)
         # Ensures the driver gets loaded successfully:
         while "No such device" in os.popen('ifconfig wlan0 up 2>&1').read():
-            logging.info("Reloading brcmfmac driver again...")
+                logging.info("Reloading brcmfmac driver again...")
 	        subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
 	        time.sleep(5)
-        logging.info("Reloading brcmfmac driver again because sometimes it gets stuck on the first reload...")
-        subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
-        time.sleep(5)
         logging.info("Randomizing the MAC address prior to bringing up the wlan0 interface...")
-        subprocess.Popen('macchanger -A wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+        subprocess.Popen('ifconfig wlan0 down && macchanger -A wlan0 && ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
         logging.info("Bringing up wlan0 interface...")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
