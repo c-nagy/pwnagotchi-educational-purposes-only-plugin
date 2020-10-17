@@ -22,6 +22,7 @@ class EducationalPurposesOnly(plugins.Plugin):
     def _connect_to_target_network(self, network_name, channel):
         global READY
         READY = False
+        logging.info("READY state set to \"%b\" while attempting to connect to network..." % READY)
         logging.info("Starting connection to target network on channel %d!" % channel) 
         logging.info("Telling Bettercap to pause wifi recon...")
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
@@ -43,7 +44,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         logging.info("Ensuring wlan0 interface is up...")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
-        logging.info("Setting the wlan0 channel to match the target access point")
+        logging.info("Setting the wlan0 channel to match the target access point...")
         subprocess.Popen("iwconfig wlan0 channel %d" % channel, shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
@@ -98,7 +99,9 @@ class EducationalPurposesOnly(plugins.Plugin):
             self._restart_monitor_mode()
             
     def on_wifi_update(self, agent, access_points):
+        global READY
         logging.info("Wifi state updating!")
+        logging.info("READY state is %b" % READY)
         if READY == True and "Not-Associated" in os.popen('iwconfig wlan0').read():
             for network in access_points:
                 if network['hostname'] == self.options['home-network']:
