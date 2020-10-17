@@ -44,7 +44,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
         logging.info("Setting the wlan0 channel to match the target access point")
-        subprocess.Popen("iwconfig wlan0 channel 11", shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+        subprocess.Popen("iwconfig wlan0 channel %d" % channel, shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
         logging.info("Writing to the wpa_supplicant.conf file...")
@@ -58,10 +58,10 @@ class EducationalPurposesOnly(plugins.Plugin):
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('wpa_cli -i wlan0 reconfigure', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
-        logging.info("Trying to get an IP address on the network via DHCP")
+        logging.info("Trying to get an IP address on the network via DHCP...")
         subprocess.Popen('dhclient wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
-        logging.info("Running dhclient one more time to be safe")
+        logging.info("Running dhclient once again to be safe...")
         subprocess.Popen('dhclient wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         READY = True
         
@@ -98,19 +98,12 @@ class EducationalPurposesOnly(plugins.Plugin):
             self._restart_monitor_mode()
             
     def on_wifi_update(self, agent, access_points):
-        global READY
-        logging.info("Wifi updating NOW!")
-        home_network = self.options['home-network']
+        logging.info("Wifi state updating!")
         if READY == True and "Not-Associated" in os.popen('iwconfig wlan0').read():
             for network in access_points:
-                if network['hostname'] == home_network:
-                    logging.info("FOUND home network \"%s\" nearby. Details: %s" % (home_network, network))
-                    signal_strength = network['rssi']
-                    channel = network['channel']
-                    logging.info("signal strength is %d and channel is %d" % (signal_strength, channel))
-                    if signal_strength >= self.options['minimum-signal-strength']:
-                        logging.info("starting association...")
-                        READY = 0
-                        self._connect_to_target_network(network['hostname'], channel)
+                if network['hostname'] == self.options['home-network']:
+                    logging.info("%s is nearby! Signal strength is %d and channel is %d." % (self.options['home-network'], network['rssi'], network['channel']))
+                    if network['rssi'] >= self.options['minimum-signal-strength']:
+                        self._connect_to_target_network(network['hostname'], network['channel'])
                     else:
-                        logging.info("The signal strength of %s is too low (%d)" % (home_network, signal_strength))
+                        logging.info("Unfortunately, the signal strength of %s is currently %d, which is weaker than the minimum set in config.toml." % (network['hostname'], network['rssi']))
