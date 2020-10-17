@@ -32,6 +32,11 @@ class EducationalPurposesOnly(plugins.Plugin):
         logging.info("Disabling monitor mode by reloading the brcmfmac driver...")
         subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
+        # Ensures the driver gets loaded successfully:
+        while "No such device" in os.popen('ifconfig wlan0 up 2>&1').read():
+            logging.info("Reloading brcmfmac driver again...")
+	        subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+	        time.sleep(5)
         logging.info("Reloading brcmfmac driver again because sometimes it gets stuck on the first reload...")
         subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(5)
