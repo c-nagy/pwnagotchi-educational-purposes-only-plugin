@@ -22,56 +22,61 @@ class EducationalPurposesOnly(plugins.Plugin):
 
     def _connect_to_target_network(self, network_name, channel):
         global READY
-        logging.info("Sending command to Bettercap to stop using mon0")
+        logging.info('sending command to Bettercap to stop using mon0...')
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
-        logging.info("Ensuring all wpa_supplicant processes are terminated")
+        logging.info('ensuring all wpa_supplicant processes are terminated...')
         subprocess.Popen('systemctl stop wpa_supplicant; killall wpa_supplicant', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Disabling monitor mode")
+        logging.info('disabling monitor mode...')
         subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
+        # Runs this driver reload command again because sometimes it gets stuck the first time:
         subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Randomizing wlan0 MAC address prior to connecting")
+        logging.info('randomizing wlan0 MAC address prior to connecting...')
         subprocess.Popen('macchanger -A wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Starting up wlan0 again")
+        logging.info('starting up wlan0 again...')
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(3)
+        # This command runs multiple times because it sometimes doesn't work the first time:
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Setting wlan0 channel to match AP")
-        subprocess.Popen("iwconfig wlan0 channel 11", shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+        logging.info('setting wlan0 channel to match the target...')
+        subprocess.Popen('iwconfig wlan0 channel 11', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Overwriting wpa_supplicant.conf file")
-        with open("/etc/wpa_supplicant/wpa_supplicant.conf", 'w') as wpa_supplicant_conf:
+        logging.info('writing to wpa_supplicant.conf file...')
+        with open('/etc/wpa_supplicant/wpa_supplicant.conf', 'w') as wpa_supplicant_conf:
             wpa_supplicant_conf.write("ctrl_interface=DIR=/var/run/wpa_supplicant\nupdate_config=1\ncountry=GB\n\nnetwork={\n\tssid=\"%s\"\n\tpsk=\"%s\"\n}\n" % (network_name, self.options['home-password']))
-        logging.info("Starting wpa_supplicant background process")
+        logging.info('starting wpa_supplicant background process...')
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('wpa_supplicant -u -s -c /etc/wpa_supplicant/wpa_supplicant.conf -i wlan0 &', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Connecting to wifi")
+        logging.info('connecting to wifi...')
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('wpa_cli -i wlan0 reconfigure', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
-        logging.info("Trying to get an IP address on the network via DHCP")
+        logging.info('trying to get an IP address on the network via DHCP...')
         subprocess.Popen('dhclient wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
         READY = 1
         
     def _restart_monitor_mode(self):
-        # Stop wpa_supplicant processes:
+        logging.info('resuming wifi recon and monitor mode...')
+        logging.info('stopping wpa_supplicant...')
         subprocess.Popen('systemctl stop wpa_supplicant; killall wpa_supplicant')
-        # Restart potentially buggy driver:
+        time.sleep(10)
+        logging.info('reloading brcmfmac driver...')
         subprocess.Popen('modprobe --remove brcmfmac && modprobe brcmfmac')
-        # Randomize MAC address of wlan0 again:
+        time.sleep(10)
+        logging.info('randomizing MAC address of wlan0...')
         subprocess.Popen('macchanger -A wlan0')
-        # Ensure wlan0 interface is up:
+        time.sleep(10)
         subprocess.Popen('ifconfig wlan0 up')
-        # Start monitor mode:
+        logging.info('starting monitor mode...')
         subprocess.Popen('iw phy "$(iw phy | head -1 | cut -d" " -f2)" interface add mon0 type monitor && ifconfig mon0 up')
-        # Send command to Bettercap to resume wifi recon (using mon0):
+        logging.info('telling Bettercap to resume wifi recon...')
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
     def _internal_network_scans(network_name):
