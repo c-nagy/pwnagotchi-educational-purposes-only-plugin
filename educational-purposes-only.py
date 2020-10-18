@@ -27,6 +27,10 @@ class EducationalPurposesOnly(plugins.Plugin):
         logging.info("educational-purposes-only loaded")
         READY = 1
     
+    def display_text(self, text):
+        global TEXT_TO_DISPLAY
+        TEXT_TO_DISPLAY = text
+    
     def on_ui_update(self, ui):
         if TEXT_TO_DISPLAY:
             ui.set('face', '( ͡° ͜ʖ ͡°)')
@@ -105,6 +109,7 @@ class EducationalPurposesOnly(plugins.Plugin):
                 if network['hostname'] == home_network:
                     signal_strength = network['rssi']
                     channel = network['channel']
+                    self.display_text('Found %s nearby!' % network['hostname'])
                     logging.info("FOUND home network nearby on channel %d (rssi: %d)" % (channel, signal_strength))
                     if signal_strength >= self.options['minimum-signal-strength']:
                         logging.info("Starting association...")
