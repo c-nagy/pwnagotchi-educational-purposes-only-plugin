@@ -43,7 +43,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
         logging.info('setting wlan0 channel to match the target...')
-        subprocess.Popen('iwconfig wlan0 channel 11', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
+        subprocess.Popen('iwconfig wlan0 channel %d' % channel, shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
         logging.info('writing to wpa_supplicant.conf file...')
@@ -98,7 +98,6 @@ class EducationalPurposesOnly(plugins.Plugin):
         
     def on_wifi_update(self, agent, access_points):
         global READY
-        logging.info("Wifi state updating normally...")
         home_network = self.options['home-network']
         if READY == 1 and "Not-Associated" in os.popen('iwconfig wlan0').read():
             for network in access_points:
