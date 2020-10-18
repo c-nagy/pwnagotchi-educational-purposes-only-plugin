@@ -11,10 +11,12 @@ import os
 import subprocess
 import requests
 import time
+from pwnagotchi.ai.reward import RewardFunction
 
 
 READY = 0
-TEXT_TO_DISPLAY = ''
+STATUS = ''
+NETWORK = ''
 
 class EducationalPurposesOnly(plugins.Plugin):
     __author__ = '@nagy_craig'
@@ -28,18 +30,40 @@ class EducationalPurposesOnly(plugins.Plugin):
         READY = 1
     
     def display_text(self, text):
-        global TEXT_TO_DISPLAY
-        TEXT_TO_DISPLAY = text
+        global STATUS
+        STATUS = text
     
     def on_ui_update(self, ui):
-        if TEXT_TO_DISPLAY:
-            ui.set('face', '( ͡° ͜ʖ ͡°)')
-            ui.set('status', TEXT_TO_DISPLAY)
-            TEXT_TO_DISPLAY = ''
-        
+        global STATUS
+        while STATUS == 'rssi_low':
+            ui.set('face', '(ﺏ__ﺏ)')
+            ui.set('status', 'Signal strength of %s is currently too low to connect ...' % NETWORK)
+        while STATUS == 'home_detected':
+            ui.set('face', '(◕‿‿◕)')
+            ui.set('face', '(ᵔ◡◡ᵔ)')
+            ui.set('status', 'Found home network at %s ...' % NETWORK)
+        while STATUS == 'switching_mon_off':
+            ui.set('face', '(◕‿‿◕)')
+            ui.set('face', '(ᵔ◡◡ᵔ)')
+            ui.set('status', 'We\'re home! Pausing monitor mode ...')
+        while STATUS == 'scrambling_mac':
+            ui.set('face', '(⌐■_■)')
+            ui.set('status', 'Scrambling MAC address before connecting to %s ...' % NETWORK)
+        while STATUS == 'associating':
+            ui.set('status', 'Greeting the AP and asking for an IP via DHCP ...')
+            ui.set('face', '(◕‿◕ )')
+            ui.set('face', '( ◕‿◕)')
+        if STATUS == 'associated':
+            ui.set('face', '(ᵔ◡◡ᵔ)')
+            ui.set('status', 'Home at last!')
+
     def _connect_to_target_network(self, network_name, channel):
         global READY
+        global STATUS
+        global NETWORK
+        NETWORK = network_name
         logging.info('sending command to Bettercap to stop using mon0...')
+        STATUS = 'switching_mon_off'
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon off"}', auth=('pwnagotchi', 'pwnagotchi'))
         logging.info('ensuring all wpa_supplicant processes are terminated...')
         subprocess.Popen('systemctl stop wpa_supplicant; killall wpa_supplicant', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
@@ -51,6 +75,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         subprocess.Popen('modprobe --remove brcmfmac; modprobe brcmfmac', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
         logging.info('randomizing wlan0 MAC address prior to connecting...')
+        STATUS = 'scrambling_mac'
         subprocess.Popen('macchanger -A wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
         logging.info('starting up wlan0 again...')
@@ -60,6 +85,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
         logging.info('setting wlan0 channel to match the target...')
+        STATUS = 'associating'
         subprocess.Popen('iwconfig wlan0 channel %d' % channel, shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
@@ -77,6 +103,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         logging.info('trying to get an IP address on the network via DHCP...')
         subprocess.Popen('dhclient wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
+        STATUS = 'associated'
         READY = 1
         
     def _restart_monitor_mode(self):
@@ -103,6 +130,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         
     def on_wifi_update(self, agent, access_points):
         global READY
+        global STATUS
+        display = agent._view
         home_network = self.options['home-network']
         if READY == 1 and "Not-Associated" in os.popen('iwconfig wlan0').read():
             for network in access_points:
@@ -110,10 +139,13 @@ class EducationalPurposesOnly(plugins.Plugin):
                     signal_strength = network['rssi']
                     channel = network['channel']
                     self.display_text('Found %s nearby!' % network['hostname'])
+                    display.update(force=True)
                     logging.info("FOUND home network nearby on channel %d (rssi: %d)" % (channel, signal_strength))
                     if signal_strength >= self.options['minimum-signal-strength']:
                         logging.info("Starting association...")
                         READY = 0
                         self._connect_to_target_network(network['hostname'], channel)
+                        agent.mode = 'manual'
                     else:
                         logging.info("The signal strength is too low (%d) to connect." % (signal_strength))
+                        STATUS = 'rssi_low'
