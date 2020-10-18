@@ -1,4 +1,5 @@
-# educational-purposes-only performs automatic wifi authentication and internal network recon
+# Educational-purposes-only performs automatic wifi authentication and internal network recon
+# Some code and inspiration taken from forrest's Pwnagotchi plugin "quick_rides_to_jail"
 # Install dependencies: apt update; apt install nmap macchanger
 from pwnagotchi.ui.components import LabeledValue
 from pwnagotchi.ui.view import BLACK
@@ -12,7 +13,8 @@ import requests
 import time
 
 
-READY = 1
+READY = 0
+TEXT_TO_DISPLAY = ''
 
 class EducationalPurposesOnly(plugins.Plugin):
     __author__ = '@nagy_craig'
@@ -20,6 +22,17 @@ class EducationalPurposesOnly(plugins.Plugin):
     __license__ = 'GPL3'
     __description__ = 'A plugin to automatically authenticate to known networks and perform internal network recon'
 
+    def on_loaded(self):
+        global READY
+        logging.info("educational-purposes-only loaded")
+        READY = 1
+    
+    def on_ui_update(self, ui):
+        if TEXT_TO_DISPLAY:
+            ui.set('face', '( ͡° ͜ʖ ͡°)')
+            ui.set('status', TEXT_TO_DISPLAY)
+            TEXT_TO_DISPLAY = ''
+        
     def _connect_to_target_network(self, network_name, channel):
         global READY
         logging.info('sending command to Bettercap to stop using mon0...')
@@ -79,19 +92,7 @@ class EducationalPurposesOnly(plugins.Plugin):
         logging.info('telling Bettercap to resume wifi recon...')
         requests.post('http://127.0.0.1:8081/api/session', data='{"cmd":"wifi.recon on"}', auth=('pwnagotchi', 'pwnagotchi'))
         
-    def _internal_network_scans(network_name):
-        aquatone_cmd = 'X'
-    
-    def on_loaded(self):
-        logging.info("educational-purposes-only loaded")
-
-    def on_ui_setup(self, ui):
-        pass
-
-    def on_unload(self, ui):
-        pass
-
-    def on_ui_update(self, ui):
+    def on_epoch(self, ui):
         # If not connected to a wireless network and mon0 doesn't exist, run _restart_monitor_mode function
         if "Not-Associated" in subprocess.Popen('iwconfig wlan0').read() and "Monitor" not in subprocess.Popen('iwconfig mon0').read():
             self._restart_monitor_mode()
