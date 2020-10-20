@@ -131,21 +131,17 @@ class EducationalPurposesOnly(plugins.Plugin):
     def on_wifi_update(self, agent, access_points):
         global READY
         global STATUS
-        display = agent._view
         home_network = self.options['home-network']
         if READY == 1 and "Not-Associated" in os.popen('iwconfig wlan0').read():
             for network in access_points:
                 if network['hostname'] == home_network:
                     signal_strength = network['rssi']
                     channel = network['channel']
-                    self.display_text('Found %s nearby!' % network['hostname'])
-                    display.update(force=True)
                     logging.info("FOUND home network nearby on channel %d (rssi: %d)" % (channel, signal_strength))
                     if signal_strength >= self.options['minimum-signal-strength']:
                         logging.info("Starting association...")
                         READY = 0
                         self._connect_to_target_network(network['hostname'], channel)
-                        agent.mode = 'manual'
                     else:
                         logging.info("The signal strength is too low (%d) to connect." % (signal_strength))
                         STATUS = 'rssi_low'
