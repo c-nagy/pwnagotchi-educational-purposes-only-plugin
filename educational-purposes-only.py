@@ -78,6 +78,8 @@ class EducationalPurposesOnly(plugins.Plugin):
         STATUS = 'scrambling_mac'
         subprocess.Popen('macchanger -A wlan0', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(10)
+        logging.info('setting hostname to \'work-machine\' prior to connecting (for added stealth)...')
+        subprocess.Popen('hostnamectl set-hostname work-machine', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         logging.info('starting up wlan0 again...')
         subprocess.Popen('ifconfig wlan0 up', shell=True, stdin=None, stdout=open("/dev/null", "w"), stderr=None, executable="/bin/bash")
         time.sleep(3)
